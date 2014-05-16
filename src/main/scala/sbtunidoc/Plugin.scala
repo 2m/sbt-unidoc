@@ -13,7 +13,7 @@ object Plugin extends sbt.Plugin {
   import UnidocKeys._
 
   object UnidocKeys {
-    val unidoc                    = taskKey[Seq[File]]("Create unified scaladoc for all aggregates.")
+    val unidoc                    = taskKey[Tuple2[File, File]]("Create unified scaladoc for all aggregates.")
     val unidocAllSources          = taskKey[Seq[Seq[File]]]("All sources.")
     val unidocAllClasspaths       = taskKey[Seq[Classpath]]("All classpaths.")
     val unidocScopeFilter         = settingKey[ScopeFilter]("Control sources to be included in unidoc.")
@@ -80,7 +80,7 @@ object Plugin extends sbt.Plugin {
     ))
   def javaUnidocTask(c: Configuration, sc: Configuration): Seq[sbt.Def.Setting[_]] =
     inConfig(c)(Defaults.configSettings ++ baseJavaUnidocTasks(sc)) ++ Seq(
-      unidoc in sc := Seq((doc in c).value)
+      unidoc in sc := (null, (doc in c).value)
     )
 
   /** Add this to the root project to generate Scala unidoc. */
@@ -92,7 +92,7 @@ object Plugin extends sbt.Plugin {
     ))
   def scalaUnidocTask(c: Configuration, sc: Configuration): Seq[sbt.Def.Setting[_]] =
     inConfig(c)(Defaults.configSettings ++ baseScalaUnidocTasks(sc)) ++ Seq(
-      unidoc in sc := Seq((doc in c).value)
+      unidoc in sc := ((doc in c).value, null)
     )
 
   /** An alias for scalaUnidocSettings */
@@ -104,7 +104,7 @@ object Plugin extends sbt.Plugin {
   def scalaJavaUnidocTask(c1: Configuration, c2: Configuration, sc: Configuration): Seq[sbt.Def.Setting[_]] =
     inConfig(c1)(Defaults.configSettings ++ baseScalaUnidocTasks(sc)) ++
     inConfig(c2)(Defaults.configSettings ++ baseJavaUnidocTasks(sc)) ++ Seq(
-      unidoc in sc <<= (doc in c1, doc in c2) map { (s, j) => Seq(s, j) })
+      unidoc in sc <<= (doc in c1, doc in c2) map { (s, j) => (s, j) })
 
   object Unidoc {
     import java.io.PrintWriter
